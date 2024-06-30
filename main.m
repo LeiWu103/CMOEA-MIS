@@ -3,8 +3,7 @@ N = 100;
 K = 5;
 Coding='Binary';
 
-result = zeros(30,8);
-standard_error = zeros(30,3);
+result = zeros(30,5);
 d=input("数据集：");
 Turn = input("执行次数：");
 
