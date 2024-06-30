@@ -5,13 +5,13 @@ Coding='Binary';
 
 result = zeros(30,8);
 standard_error = zeros(30,3);
-d=input("Êý¾Ý¼¯£º");
-Turn = input("Ö´ÐÐ´ÎÊý£º");
-HSF=[];
+d=input("æ•°æ®é›†ï¼š");
+Turn = input("æ‰§è¡Œæ¬¡æ•°ï¼š");
+
 
 
 for turn = 1:Turn
-    fprintf("µÚ%d´Î£º", turn);
+    fprintf("ç¬¬%dæ¬¡ï¼š", turn);
     data1=datasetImport(d);
     [y1,~] = mapminmax(data1(:,1:(end-1))');
     data=[y1',data1(:,end)];
@@ -22,7 +22,7 @@ for turn = 1:Turn
     for package=1:K
         shoulian = zeros(100, 100, 2);
         fprintf("%d ", package);
-        %% »®·ÖÊý¾Ý¼¯
+        %% åˆ’åˆ†æ•°æ®é›†
         P = [];
         offspring = [];
         combine_chromo = [];
@@ -37,22 +37,22 @@ for turn = 1:Turn
         [v] = size(data_train1,1);
         minvalue1 = zeros(1,v);
         maxvalue1 = ones(1,v);
-        Boundary = [maxvalue1;minvalue1]; %%ÉÏÏÂ±ß½ç
+        Boundary = [maxvalue1;minvalue1]; %%ä¸Šä¸‹è¾¹ç•Œ
         class = unique(data_train1(:, end));
-        %% ²úÉúÐÂµÄ³õÊ¼ÖÖÈº
+        %% äº§ç”Ÿæ–°çš„åˆå§‹ç§ç¾¤
         a = initialize(N,v);
         f1 = find(a>=0.5);
         a(f1) = 1;
         f2 = find(a<0.5);
         a(f2) = 0;
         P = a;
-        %% ÆÀ¼Û³õÊ¼»¯Éú³ÉµÄ¸öÌå
+        %% è¯„ä»·åˆå§‹åŒ–ç”Ÿæˆçš„ä¸ªä½“
         aim = zeros(N,3);
         for i = 1 : N
             %GET AIM
             Cpop = P(i,:);
             Cpop = logical(Cpop);
-            CdataSet = data_train1(Cpop,:);%Ñ¡³öµ±Ç°ÖÖÈºÖÐÑ¡È¡µÄÊµÀý£¬¼´Cpop==1
+            CdataSet = data_train1(Cpop,:);%é€‰å‡ºå½“å‰ç§ç¾¤ä¸­é€‰å–çš„å®žä¾‹ï¼Œå³Cpop==1
             Clabel = CdataSet(:,n);
             CdataSet = sparse(CdataSet(:,1:n-1));
             model1(i,1)= svmtrain(Clabel,CdataSet,'-q');
@@ -61,7 +61,7 @@ for turn = 1:Turn
             aim(i,2) = 1-sum(Cpop==0)/v;
             aim(i,3) = 1-acc(1,1)/100;
         end
-        %% ½ø»¯½×¶Î
+        %% è¿›åŒ–é˜¶æ®µ
         distance_1 = zeros(v, v);
         for u = 1 : v
             for k = 1 : v
@@ -70,30 +70,21 @@ for turn = 1:Turn
             end
         end
         chromo_parent = zeros(100,v);
-        hsf = [];
         for j = 1 : gen
             
             
-            %½øÐÐ¸öÌåµÄ»®·Ö
+            %è¿›è¡Œä¸ªä½“çš„åˆ’åˆ†
             [hard_constraint_individual_index,soft_constraint_individual_index,feasible_individual_index] = IndexOfConstraintViolate(aim,data1,data_train1,P);
-            if mod(j, 10) == 1
-                h = sum(hard_constraint_individual_index~=0);
-                s = sum(soft_constraint_individual_index~=0);
-                f = sum(feasible_individual_index~=0);
-                hsf = [hsf h s f];
-%                 if j == 100
-%                     HSF=[HSF; hsf];
-%                 end
-            end
-            %Ô¼ÊøÑ¡Ôñ²Ù×÷
+            
+            %çº¦æŸé€‰æ‹©æ“ä½œ
             chromo_parent = constraints_based_selection(hard_constraint_individual_index,soft_constraint_individual_index,feasible_individual_index,aim,P);
 
             len = size(chromo_parent,2);
 
-            %½»²æ±äÒì²úÉú×Ó´úÖÖÈº
+            %äº¤å‰å˜å¼‚äº§ç”Ÿå­ä»£ç§ç¾¤
             offspring = crossover_mutation(chromo_parent,j,data_train1,data_train, distance_1, distance_1);
                     
-            %¶Ô×Ó´ú½øÐÐÆÀ¼Û
+            %å¯¹å­ä»£è¿›è¡Œè¯„ä»·
             offspring_aim = zeros(N,3);
             for i = 1 : N
                 Cpop = offspring(i,:);
@@ -114,18 +105,18 @@ for turn = 1:Turn
                 end
             end
             
-            %¸¸×Ó´úºÏ²¢
+            %çˆ¶å­ä»£åˆå¹¶
             [p,q] = size(chromo_parent);
             [pop_offspring,~] = size(offspring);
             combine_chromo(1:p,1:q-3) = P(1:100,:);
             combine_chromo(1:p,q-2:q) = aim(:,1:3);
             combine_chromo((p+1):(2*p),1:q-3) = offspring(1:100,:);
             combine_chromo((p+1):(2*p),q-2:q) = offspring_aim(:,1:3);
-            %ÅÅÐò
+            %æŽ’åº
             [F,combine_chromo2] = chromo_sort(combine_chromo);
-            %Óµ¼·¶È¼ÆËã
+            %æ‹¥æŒ¤åº¦è®¡ç®—
             combine_chromo3 = crowding_distance_sort(F,combine_chromo2);
-            %¾«Ó¢²ßÂÔÉ¸Ñ¡ºó´ú
+            %ç²¾è‹±ç­–ç•¥ç­›é€‰åŽä»£
             [chromo,temp] = elitism(combine_chromo3);
             P(:,1:temp-5) = chromo(:,1:temp-5);
             aim(:,1:3) = chromo(:,temp-4:temp-2);
@@ -175,16 +166,10 @@ for turn = 1:Turn
                 aim(i,3) = 1-acc(1,1)/100;
             end
         end
-        [hard_constraint_individual_index,soft_constraint_individual_index,feasible_individual_index] = IndexOfConstraintViolate(aim,data1,data_train1,P);
-        h = sum(hard_constraint_individual_index~=0);
-        s = sum(soft_constraint_individual_index~=0);
-        f = sum(feasible_individual_index~=0);
-        hsf = [hsf h s f];
-        HSF=[HSF; hsf];
 
         [~,index] = sort(aim(:,3));
         [test_r,test_c] = size(data_test);
-        %%²âÊÔ¾«¶È
+        %%æµ‹è¯•ç²¾åº¦
         Cpop1 = P(index(1,1),:);
         Cpop1 = logical(Cpop1);
         CdataSet1 = data_train1(Cpop1,:);
@@ -196,10 +181,7 @@ for turn = 1:Turn
         PBE(package,2) = 1-sum(Cpop1==0)/v;
         PBE(package,3) = 1-acc(1,1)/100;
 %         PBE(package,4) = 1-NHV(aim(:,2:3),[1,1]);
-        max_acc_red = 0;
-        sum_GM = 0;
-        sum_hard = 0;
-        %¼ÆËãÖÖÈºÄÚÃ¿¸ö¸öÌå
+        %è®¡ç®—ç§ç¾¤å†…æ¯ä¸ªä¸ªä½“
         Test = zeros(1, N);
         Last = zeros(N, 2);
         GM_values = zeros(N,1);
@@ -212,27 +194,13 @@ for turn = 1:Turn
             CdataSet3 = sparse(CdataSet1(:,1:n-1));
             model4 = svmtrain(Clabel, CdataSet3, '-q');
             [predict_label4, acc, ~]  = svmpredict(data_test(:,test_c),sparse(data_test(:,1:test_c-1)), model4,'-q');
-            sum_GM = sum_GM + getTestGM(data_test, predict_label4);
             GM_values(i) = getTestGM(data_test, predict_label4);
             Test(i) = acc(1,1)/100;
             Last(i, 2) = sum(Cpop2==0)/v;
-            if max_acc_red < acc(1,1)/100 * (sum(Cpop2==0)/v)
-                max_acc_red = acc(1,1) /100* (sum(Cpop2==0)/v);
-            end
-            num = 0;
-            for c = 1 : length(class)
-                if ~isempty(find(data_train1(P(i, :) == 1, end) == class(c), 1))
-                    num = num + 1;
-                end
-            end
-            sum_hard = sum_hard + num / c; 
         end
         kexing = GM_values > 0;
         Test1 = 1-Test';
         PBE(package, 4) = NHV([Test1(kexing), 1-Last(kexing,2)], [1,1]);
-        PBE(package, 5) = max_acc_red;
-        PBE(package, 6) = sum_GM / N;
-        PBE(package, 7) = sum_hard / N;
 %         mkdir(['..\PF\CMOEA-MIS\' num2str(d)]);
 %    save(['..\PF\CMOEA-MIS\' num2str(d) '\' num2str(package) '.mat'], "Test", "Last", "GM_values");
 %    mkdir(['..\shoulian\CMOEA-MIS\' num2str(d)]);
@@ -244,12 +212,6 @@ for turn = 1:Turn
     result(turn,3) = 1 - sum(PBE(:,3)) / K;
     result(turn,4) = sum(PBE(:,4)) / K;
     result(turn, 5) = time / K;
-    result(turn, 6) = sum(PBE(:, 5)) / K;
-    result(turn, 7) = sum(PBE(:, 6)) / K;
-    result(turn, 8) = sum(PBE(:, 7)) / K;
-    %%std±ê×¼²î
-    standard_error(turn,1) = std(PBE(:,1));
-    standard_error(turn,2) = std(PBE(:,2));
-    standard_error(turn,3) = std(PBE(:,3));
+
     fprintf("\n");
 end
